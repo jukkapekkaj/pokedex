@@ -12,12 +12,13 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(c *pokeapi.Config) error
+	callback    func(c *pokeapi.Config, args []string) error
 }
 
 var commands = map[string]cliCommand{}
 
 func main() {
+
 	commands["help"] = cliCommand{
 		name:        "help",
 		description: "Displays a help message",
@@ -42,6 +43,30 @@ func main() {
 		callback:    pokeapi.GetPrevMap,
 	}
 
+	commands["explore"] = cliCommand{
+		name:        "explore",
+		description: "List pokemons in area",
+		callback:    pokeapi.ListPokemons,
+	}
+
+	commands["catch"] = cliCommand{
+		name:        "catch",
+		description: "Try to catch pokemon",
+		callback:    pokeapi.CatchPokemon,
+	}
+
+	commands["inspect"] = cliCommand{
+		name:        "inspect",
+		description: "Inspect catched pokemon",
+		callback:    pokeapi.InspectPokemon,
+	}
+
+	commands["pokedex"] = cliCommand{
+		name:        "pokedex",
+		description: "List catched pokemons",
+		callback:    pokeapi.ShowCatchPokemons,
+	}
+
 	poke_config := &pokeapi.Config{Next: "", Previous: ""}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -53,7 +78,7 @@ func main() {
 			if len(cleanedInput) > 0 {
 				command, ok := commands[cleanedInput[0]]
 				if ok {
-					err := command.callback(poke_config)
+					err := command.callback(poke_config, cleanedInput[1:])
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -69,13 +94,13 @@ func main() {
 
 }
 
-func commandExit(c *pokeapi.Config) error {
+func commandExit(c *pokeapi.Config, _ []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *pokeapi.Config) error {
+func commandHelp(c *pokeapi.Config, _ []string) error {
 	fmt.Println("Welcome to the Pokedex!\nUsage:")
 	fmt.Println()
 	for name, command := range commands {
